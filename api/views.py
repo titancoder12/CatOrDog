@@ -19,16 +19,17 @@ output_index = interpreter.get_output_details()[0]["index"]
 def predict(request):
 
     # Check if 'image' is in the request data
-    if 'image' not in request.data:
+    if 'image' not in request.FILES:
         return Response({'error': 'No image provided'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Get the image from the request
-    image = request.data['image']
-
-    # Preprocess the image
+    
+    # Get/Preprocess the image
     try:
-        image = tf.image.decode_image(image)
-    except ValueError:
+        # Get the image from the request
+        image = request.FILES['image']
+        image = image.read()
+        image = tf.io.decode_jpeg(image)
+    except ValueError as e:
+        print(str(e))
         return Response({'error': 'Invalid image'}, status=status.HTTP_400_BAD_REQUEST)
     
     image = tf.image.resize(image, [224, 224])
